@@ -1,0 +1,22 @@
+cat /etc/*release*
+docker container exec -it a901 cat /etc/*release*
+-------------------------------------------------
+
+External commands are just files on disks. So, how does bash know where to find commands?
+        * echo $PATH
+        * which ping
+        * type ping
+        * type for
+
+Run other commands which are not in the path
+        * Give the full path of the command: tmp/maypath/test.sh
+        * Give the relative path: .././maypath/test.sh
+        * Add into the PATH
+                * vi ~/.bashrc
+                        * export PATH=$PATH:/tmp/mypath    or
+                        * export PATH=$PATH:$PWD
+                * Then reinitiate the terminal
+-------------------------------------------------
+
+tail -f /var/log/syslog #you can follow what is written to syslog, as it happens, within your terminal window
+-------------------------------------------------
