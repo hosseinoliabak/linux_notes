@@ -2221,92 +2221,69 @@ Modify the anaconda-ks.cfg file to meet the following requirements
 3. The local machine name is set to `server2.example.com`
 
 ## LDAP, IPA, Microsoft AD
-### Connecting to an LDAP server
+### Connecting the client to an LDAP server
 <pre>
-[root@rhcsa ~]# <b>yum groups install "Directory Client"</b>
-[root@rhcsa ~]# <b>authconfig-tui</b> 
-                                     ┌────────────────┤ Authentication Configuration ├─────────────────┐
-                                     │                                                                 │ 
-                                     │  User Information        Authentication                         │ 
-                                     │  [ ] Cache Information   [ ] Use MD5 Passwords                  │ 
-                                     │  [*] Use LDAP            [*] Use Shadow Passwords               │ 
-                                     │  [ ] Use NIS             [*] Use LDAP Authentication            │ 
-                                     │  [ ] Use IPAv2           [*] Use Kerberos                       │ 
-                                     │  [ ] Use Winbind         [*] Use Fingerprint reader             │ 
-                                     │                          [ ] Use Winbind Authentication         │ 
-                                     │                          [*] Local authorization is sufficient  │ 
-                                     │                                                                 │ 
-                                     │            ┌────────┐                      ┌──────┐             │ 
-                                     │            │ Cancel │                      │ Next │             │ 
-                                     │            └────────┘                      └──────┘             │ 
-                                     │                                                                 │ 
-                                     │                                                                 │ 
-                                     └─────────────────────────────────────────────────────────────────┘ 
-                                                                                                         
-                                            ┌─────────────────┤ LDAP Settings ├─────────────────┐
-                                            │                                                   │ 
-                                            │          [*] Use TLS                              │ 
-                                            │  Server: lab.example.com_________________________ │ 
-                                            │ Base DN: dc=example,dc=com_______________________ │ 
-                                            │                                                   │ 
-                                            │         ┌──────┐                  ┌────┐          │ 
-                                            │         │ Back │                  │ Ok │          │ 
-                                            │         └──────┘                  └────┘          │ 
-                                            │                                                   │ 
-                                            │                                                   │ 
-                                            └───────────────────────────────────────────────────┘ 
-                                                                                                  
-                                                ┌────────────────┤ Warning ├─────────────────┐
-                                                │                                            │ 
-                                                │ To connect to a LDAP server with TLS       │ 
-                                                │ protocol enabled you need a CA certificate │ 
-                                                │ which signed your server's certificate.    │ 
-                                                │ Copy the certificate in the PEM format to  │ 
-                                                │ the '/etc/openldap/cacerts' directory.     │ 
-                                                │ Then press OK.                             │ 
-                                                │                                            │ 
-                                                │                  ┌────┐                    │ 
-                                                │                  │ Ok │                    │ 
-                                                │                  └────┘                    │ 
-                                                │                                            │ 
-                                                │                                            │ 
-                                                └────────────────────────────────────────────┘ 
-
- 
-                                          ┌─────────────────┤ Kerberos Settings ├──────────────────┐
-                                          │                                                        │ 
-                                          │        Realm: ________________________________________ │ 
-                                          │          KDC: ________________________________________ │ 
-                                          │ Admin Server: ________________________________________ │ 
-                                          │               [*] Use DNS to resolve hosts to realms   │ 
-                                          │               [*] Use DNS to locate KDCs for realms    │ 
-                                          │                                                        │ 
-                                          │          ┌──────┐                    ┌────┐            │ 
-                                          │          │ Back │                    │ Ok │            │ 
-                                          │          └──────┘                    └────┘            │ 
-                                          │                                                        │ 
-                                          │                                                        │ 
-                                          └────────────────────────────────────────────────────────┘ 
-                                                                            
-[root@rhcsa cacerts]# <b>systemctl status sssd</b>
+[root@client1 ~]# <b>yum groups install "Directory Client"</b>
+[root@client1 ~]# <b>systemctl status sssd</b>
 ● sssd.service - System Security Services Daemon
    Loaded: loaded (/usr/lib/systemd/system/sssd.service; enabled; vendor preset: disabled)
   Drop-In: /etc/systemd/system/sssd.service.d
            └─journal.conf
    Active: <b>active (running)</b> since Sun 2018-01-14 19:12:51 EST; 56s ago
-[root@rhcsa ~]# <b>su - ldpuser1</b>
 </pre>
 * Configuration file is in: `/etc/sssd/sssd.conf`
-* We can use graphical utility as well.
+* We can use graphical utility as well:
+<pre>   
+[root@client1 ~]# <b>yum install authconfig-gtk</b> 
+[root@client1 ~]# <b>authconfig-gtk &</b></pre>
+
+![ldap1](https://user-images.githubusercontent.com/31813625/35826132-d5527336-0a85-11e8-8d07-51c9d6dfe08b.png)
+
+![ldap2](https://user-images.githubusercontent.com/31813625/35826133-d562c574-0a85-11e8-9064-f2e0b4765184.png)
+
 <pre>
-[root@rhcsa ~]# <b>yum install authconfig-gtk</b>
-[root@rhcsa ~]# <b>authconfig-gtk &</b></pre>
+[root@client1 ~]# <b>getent passwd ldapuser1</b>
+ldapuser1:*:1308400001:1308400001:ldapuser1 ldapuser1:/home/ldap/ldapuser1:/bin/sh
+[root@client1 ~]# <b>su - ldapuser1</b>
+Last login: Mon Feb  5 15:03:10 EST 2018 on pts/1
+su: warning: cannot change directory to /home/ldap/ldapuser1: No such file or directory
+-sh-4.2$ 
+</pre>
+As we can see there is no home directory for the `ldapuser1`. Let's make a home
+directory in `/home/ldap/ldapuser1` for this user.
+<pre>
+[root@client1 ~]# <b>systemctl enable autofs</b>
+Created symlink from /etc/systemd/system/multi-user.target.wants/autofs.service to /usr/lib/systemd/system/autofs.service.
+[root@client1 ~]# <b>echo "/home/ldap /etc/anyname.home" > /etc/auto.master.d/anyname.autofs</b>
+[root@client1 ~]# <b>cat /etc/auto.master.d/anyname.autofs</b> 
+/home/ldap /etc/anyname.home
+[root@client1 ~]# <b>echo "ldapuser1 -rw,sync serveripa.example.com:home/ldap/ldapuser1" > /etc/anyname.home</b>
+[root@client1 ~]# <b>cat /etc/anyname.home</b>
+ldapuser1 -rw,sync serveripa.example.com:/home/ldap/ldapuser1
+[root@client1 ~]# <b>systemctl start autofs</b>
+[root@client1 ~]# <b>su - ldapuser1</b>
+Last login: Mon Feb  5 15:21:00 EST 2018 on pts/0
+-sh-4.2$ <b>pwd</b>
+/home/ldap/ldapuser1
+</pre>
+Above we configured home directory for only one user `ldapuser1`. What if we want to 
+configure for any user? I changed our `/etc/anyname.home` file.
+<pre>
+[root@client1 ~]# <b>cat /etc/anyname.home</b>
+#ldapuser1 -rw,sync serveripa.example.com:/home/ldap/ldapuser1
+* -rw,sync serveripa.example.com:/home/ldap/&
+[root@client1 ~]# <b>!sys</b>
+systemctl start autofs
+[root@client1 ~]# <b>su - ldapuser2</b>
+-sh-4.2$ <b>pwd</b>
+/home/ldap/ldapuser2
+</pre>
 
 ### Connecting to an IPA server
 Before working, be sure that your LDAP server is your DNS server. Check `/etc/resolv.conf` 
 <pre>
-[root@rhcsa ~]# <b>yum install ipa-client -y</b>
-[root@rhcsa ~]# <b>ipa-client-install</b>
+[root@client1 ~]# <b>yum install ipa-client -y</b>
+[root@client1 ~]# <b>ipa-client-install</b>
 </pre>
 
 ### Connecting to a Microsoft AD server
@@ -2322,10 +2299,10 @@ Dism.exe /online /enable-feature /featurename:psync /all # to install Password S
 
 Let's check if our DNS server which is on DC works:
 <pre>
-[root@rhcsa ~]# <b>grep "DNS1\|IPADDR" /etc/sysconfig/network-scripts/ifcfg-eth0</b>
+[root@client1 ~]# <b>grep "DNS1\|IPADDR" /etc/sysconfig/network-scripts/ifcfg-eth0</b>
 IPADDR=192.168.122.10
 DNS1=192.168.122.8
-[root@rhcsa ~]# <b>ping mtl-dc1.domain.local</b>
+[root@client1 ~]# <b>ping mtl-dc1.domain.local</b>
 PING mtl-dc1.domain.local (192.168.122.8) 56(84) bytes of data.
 64 bytes from 192.168.122.8 (192.168.122.8): icmp_seq=1 ttl=128 time=0.191 ms
 64 bytes from 192.168.122.8 (192.168.122.8): icmp_seq=2 ttl=128 time=0.399 ms
@@ -2334,8 +2311,8 @@ PING mtl-dc1.domain.local (192.168.122.8) 56(84) bytes of data.
 </pre>
 Installation
 <pre>
-[root@rhcsa ~]# <b>yum install realmd</b>
-[root@rhcsa ~]# <b>realm discover mtl-dc1.domain.local</b> # Discovers settings of the domain
+[root@client1 ~]# <b>yum install realmd</b>
+[root@client1 ~]# <b>realm discover mtl-dc1.domain.local</b> # Discovers settings of the domain
 domain.local
   type: kerberos
   realm-name: DOMAIN.LOCAL
@@ -2348,7 +2325,7 @@ domain.local
   required-package: sssd
   required-package: adcli
   required-package: samba-common-tools
-[root@rhcsa ~]# <b>realm join mtl-dc1.domain.local</b> 
+[root@client1 ~]# <b>realm join mtl-dc1.domain.local</b> 
 Password for Administrator: 
-[root@rhcsa ~]# <b>realm permit --realm domain.local --all</b> # Enables logins on AD
+[root@client1 ~]# <b>realm permit --realm domain.local --all</b> # Enables logins on AD
 </pre>
