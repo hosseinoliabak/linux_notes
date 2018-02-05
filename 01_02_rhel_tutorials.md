@@ -545,8 +545,8 @@ password. But 2 options I like are  `--stdin` to determine the user's password b
 
 For all other options I prefer to use `chage` command.
 <pre>
-[root@rhel ~]# <b>echo Password1 | passwd --stdin bran</b>
-Changing password for user hossein.
+[root@rhel ~]# <b>echo Password1 | passwd bran --stdin</b>
+Changing password for user bran.
 passwd: all authentication tokens updated successfully.
 [root@rhel ~]# <b>passwd -S bran</b>
 bran PS 2018-01-06 0 99999 7 -1 (Password set, SHA512 crypt.)
@@ -626,6 +626,36 @@ ryan:x:1002:
 ops:x:1003:ryan
 </pre>
 
+
+#### Remove a user from a group
+<pre>
+[vagrant@web1 ~]$ <b>sudo gpasswd -d user group</b></pre> 
+
+#### Manage users and groups through GUI
+<pre>
+[root@client1 ~]# <b>yum install system-config-users</b>
+[root@client1 ~]# <b>system-config-users</b></pre>
+
+![users](https://user-images.githubusercontent.com/31813625/35785467-9539f5ae-09ee-11e8-9c43-f9c7da7f172d.png)
+
+You can also use manage what you can do with `chage` and `passwd` command with GUI.
+
+These commands are the same:
+<pre>
+[root@client1 ~]# <b>chage -d 0 user1</b>
+[root@client1 ~]# <b>passwd -e user1</b>
+Expiring password for user user1.
+passwd: Success
+[root@client1 ~]# chage -l user1
+<b>Last password change					: password must be changed
+Password expires					: password must be changed
+Password inactive					: password must be changed</b>
+Account expires						: never
+Minimum number of days between password change		: 0
+Maximum number of days between password change		: 99999
+Number of days of warning before password expires	: 7
+
+</pre>
 ## File and folder permission
 * `r` on directory means `ls`
 * `w` on directories means create or delete
