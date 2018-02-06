@@ -2329,3 +2329,63 @@ domain.local
 Password for Administrator: 
 [root@client1 ~]# <b>realm permit --realm domain.local --all</b> # Enables logins on AD
 </pre>
+
+## NFS (Network File System)
+NFS server: The NFS server is the traditional way of sharing or exporting file systems
+in UNIX and Linux. Often, home directories in Linux are centralized on a single server
+with other systems mounting the remote file systems.
+<pre>
+[root@client1 ~]# <b>yum install nfs-utils</b>
+[root@client1 ~]# <b>showmount -e serveripa.example.com</b>
+Export list for serveripa.example.com:
+/srv/nfs   *
+/home/ldap *
+[root@client1 ~]# <b>mkdir /mnt/{nfs-1,nfs-2}</b>
+[root@client1 ~]# <b>mount -t nfs serveripa.example.com:/srv/nfs /mnt/nfs-1</b>
+[root@client1 ~]# <b>echo "serveripa.example.com:/srv/nfs /mnt/nfs-2 nfs _netdev 0 0" >> /etc/fstab</b> 
+[root@client1 ~]# <b>tail -n1 /etc/fstab</b> 
+serveripa.example.com:/srv/nfs /mnt/nfs-2 nfs _netdev 0 0
+[root@client1 ~]# <b>df -h | grep nfs</b>
+serveripa.example.com:/srv/nfs   17G  7.4G  9.7G  44% /mnt/nfs-2
+[root@client1 ~]# <b>cd /mnt/nfs-2</b>
+[root@client1 nfs-2]# <b>ls</b></pre>
+## Samba client
+It is better than NFS. (nowadays NFS is combined with Kerberos to provide the security)
+<pre>
+[root@client1 ~]# <b>yum install samba-client cifs-utils</b>
+[root@client1 ~]# <b>smbclient -L serveripa.example.com</b>
+Enter SAMBA\root's password: 
+Anonymous login successful
+OS=[Windows 6.1] Server=[Samba 4.6.2]
+
+	Sharename       Type      Comment
+	---------       ----      -------
+	print$          Disk      Printer Drivers
+	<b>data</b>            Disk      data share
+	public          Disk      Public Directory
+	IPC$            IPC       IPC Service (Samba 4.6.2)
+Anonymous login successful
+OS=[Windows 6.1] Server=[Samba 4.6.2]
+
+	Server               Comment
+	---------            -------
+
+	Workgroup            Master
+	---------            -------
+	SAMBA                SERVERIPA
+[root@client1 ~]# <b>mount -t cifs -o username=sambauser1,password=password //serveripa.example.com/data /mnt/manual</b>
+[root@client1 ~]# <b>ls /mnt/manual/</b>
+samba-user-1  samba-user-2  samba-user-3
+# To mount permanently we can use:
+[root@client1 ~]# <b>mkdir /smbdata</b>
+[root@client1 ~]# <b>vi /root/cred</b>
+username=sambauser1
+password=password
+[root@client1 ~]# <b>echo "//serveripa.example.com/data /smbdata cifs _netdev,credentials=/root/cred 0 0" >> /etc/fstab</b>
+[root@client1 ~]# <b>mount -a</b>
+[root@client1 ~]# <b>df -hT | grep serveripa</b>
+//serveripa.example.com/data cifs       17G  7.4G  9.7G  44% /smbdata
+[root@client1 ~]# <b>cd /smbdata/</b>
+[root@client1 smbdata]# <b>ls</b>
+samba-user-1  samba-user-2  samba-user-3
+</pre>
