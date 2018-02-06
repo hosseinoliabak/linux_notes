@@ -3,7 +3,7 @@
 from `01_tutorials.md`
 
 * To download Red Hat: https://developers.redhat.com (Minimum RedHat 7.2 needed)
-* Alternatively you can use CentOS 7.2 oe later
+* Alternatively you can use CentOS 7.2 or later
 
 ## Use RPM and YUM package management
 * RPM
