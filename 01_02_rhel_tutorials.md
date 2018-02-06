@@ -1006,6 +1006,8 @@ In the exam use GUI to save time
 Alternatively, you could use `nmtui`
 <pre>
 [root@client1 ~]# <b>nmtui</b>
+</pre>
+```
                                         ┌─┤ NetworkManager TUI ├──┐
                                         │                         │ 
                                         │ Please select an option │ 
@@ -1018,9 +1020,8 @@ Alternatively, you could use `nmtui`
                                         │                         │ 
                                         │                    <OK> │ 
                                         │                         │ 
-                                        └─────────────────────────┘ 
-                                                                                       
-</pre>
+                                        └─────────────────────────┘                                                                                     
+```
 
 The configuration path: `/etc/sysconfig/network-scripts/`
 <pre>
