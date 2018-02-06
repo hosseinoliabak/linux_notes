@@ -999,6 +999,38 @@ virbr0-nic  tun       unmanaged  --
 Connection 'ethernet-enp0s3' (67657a8a-15d3-42c5-aef1-cb01ddff22da) successfully added.
 </pre>
 
+In the exam use GUI to save time
+
+![network](https://user-images.githubusercontent.com/31813625/35841813-1191d36e-0acc-11e8-810e-d7b632ae3e31.png)
+
+Alternatively, you could use `nmtui`
+<pre>
+[root@client1 ~]# <b>nmtui</b>
+                                        ┌─┤ NetworkManager TUI ├──┐
+                                        │                         │ 
+                                        │ Please select an option │ 
+                                        │                         │ 
+                                        │ Edit a connection       │ 
+                                        │ Activate a connection   │ 
+                                        │ Set system hostname     │ 
+                                        │                         │ 
+                                        │ Quit                    │ 
+                                        │                         │ 
+                                        │                    <OK> │ 
+                                        │                         │ 
+                                        └─────────────────────────┘ 
+                                                                                       
+</pre>
+
+The configuration path: `/etc/sysconfig/network-scripts/`
+<pre>
+[root@client1 ~]# <b>ls /etc/sysconfig/network-scripts/</b>
+ifcfg-eth0   ifdown-ib    ifdown-ppp       ifdown-tunnel  ifup-ib    ifup-plusb   ifup-Team         network-functions
+ifcfg-lo     ifdown-ippp  ifdown-routes    ifup           ifup-ippp  ifup-post    ifup-TeamPort     network-functions-ipv6
+ifdown       ifdown-ipv6  ifdown-sit       ifup-aliases   ifup-ipv6  ifup-ppp     ifup-tunnel
+ifdown-bnep  ifdown-isdn  ifdown-Team      ifup-bnep      ifup-isdn  ifup-routes  ifup-wireless
+ifdown-eth   ifdown-post  ifdown-TeamPort  ifup-eth       ifup-plip  ifup-sit     init.ipv6-global
+</pre>
 ### Routing
 * To add a route in runtime, use `ip r add`
 * To add a route persistently:
