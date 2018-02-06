@@ -7,7 +7,7 @@ from `01_tutorials.md`
 
 ## Use RPM and YUM package management
 * RPM
-  * Red Hat based system, SUSE.
+  * Red Hat based systems.
   * we have command `rpm` and `.rpm` files.
   * `rpm` command is used to install and manage `.rpm` files.
   * `rpm -qa` to list all packages installed
