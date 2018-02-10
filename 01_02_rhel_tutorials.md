@@ -479,6 +479,98 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 [root@localhost ~]# <b>grep -R 'alex' /</b> # -R to recursive
 </pre>
 
+### find
+
+The `find` command helps us to find files based on many criteria. Look at these: 
+* `find .`
+* `find . -iname "*my*"` #not case sensitive
+* `find . -empty` #finds empty files 
+
+<pre>
+[vagrant@web ~]$ <b>sudo find / -name "apache*"</b>
+/etc/selinux/targeted/modules/active/modules/apache.pp
+/usr/sbin/apachectl
+/usr/share/man/man8/apachectl.8.gz
+/usr/share/httpd/icons/apache_pb.gif
+/usr/share/httpd/icons/apache_pb.png
+/usr/share/httpd/icons/apache_pb.svg
+/usr/share/httpd/icons/apache_pb2.gif
+/usr/share/httpd/icons/apache_pb2.png
+/usr/share/httpd/noindex/images/apache_pb.gif
+</pre>
+To look for directories use `-type d`. For file it is `-type f`
+<pre>
+[vagrant@web ~]$ <b>sudo find / -type d -name "httpd*"</b>
+/run/httpd
+/etc/httpd
+/var/log/httpd
+/var/cache/httpd
+/usr/lib64/httpd
+/usr/share/doc/httpd-tools-2.4.6
+/usr/share/doc/httpd-2.4.6
+/usr/share/httpd
+/usr/libexec/initscripts/legacy-actions/httpd
+</pre>
+
+These are the most common file types: 
+* `-type f` will search for a regular file 
+* `-type d` will search for a directory 
+* `-type l` will search for a symbolic link 
+* `find /var -iname “*tmp*” -size +1M -size -100M` # finds all files ending in tmp with size between 1M and 100M in /var/ directory 
+
+To search based on time: 
+* `-atime -6` file was last accessed less than 6*24 hours ago 
+* `-ctime +6` file was changed more than 6*24 hours ago  
+* `-mtime -6` file content modification less than 6*24 hours ago 
+* We also have `-amin`, `-cmin`, and `-mmin` you guess! 
+
+Acting on files 
+* Switch   `-ls`: will run `ls -dils` on each file 
+* Switch `-print`: will print the full name of the files on each line 
+* Switch `-exec`: to run commands on found files; You can point to the
+file with `{}` and finish your command with `\;` 
+* `find . -empty -exec rm '{}' \;` 
+* `find . -name "*.htm" -exec mv '{}' '{}l' \; `
+* `find /etc -maxdepth 1 -type f -exec wc -l {} \; | sort -n`
+* The `-maxdepth` tells the find how deep it should go into the directories 
+
+Other options:
+* The `-user` and `-group` specifies a specific user & group.
+* Or even find the files not belonging to any user or group with `-nouser` and `-nogroup`
+* Or even find the files not belonging to any user / group with -nouser and -nogroup 
+* Add a `!` just before any phrase to negate it. So, this will find files not belonging to *hossein*: 
+`find . ! -user hossein` 
+
+### locate & updatedb
+find is too slowwww. It searches the file system on each run but let’s see the fastest command:
+`locate kernel`
+
+If you create a new file and search it by locate command, you will not be given any
+result unless you apply `sudo updatedb` command or wait for **1 day**.
+You can see this database by `locate -S` command.
+
+If you don't have `updatedb`, you have to install required package(s):
+<pre>
+[vagrant@web ~]$ <b>sudo yum install mlocate</b></pre>
+
+<pre>
+[vagrant@web ~]$ <b>sudo cat /etc/cron.daily/mlocate</b>
+#!/bin/sh
+nodevs=$(awk '$1 == "nodev" && $2 != "rootfs" && $2 != "zfs" { print $2 }' < /proc/filesystems)
+
+renice +19 -p $$ >/dev/null 2>&1
+ionice -c2 -n7 -p $$ >/dev/null 2>&1
+/usr/bin/updatedb -f "$nodevs"
+</pre>
+
+<pre>
+hossein@hossein ~ $ <b>locate -S</b>
+Database <b>/var/lib/mlocate/mlocate.db</b>:
+        16,834 directories
+        116,206 files
+        6,836,328 bytes in file names
+        2,848,662 bytes used to store database
+</pre>
 
 ## File system hierarchy standard (FHS) and file management
 * `/bin`, `/sbin`, `/lib`, and `/lib64` are linked to the `/usr` directory (like Program Files in Windows).
