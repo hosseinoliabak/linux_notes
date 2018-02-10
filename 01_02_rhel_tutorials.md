@@ -173,7 +173,7 @@ root         5  0.0  0.0      0     0 ?        S<   21:16   0:00 [kworker/0:0H]
 [hossein@localhost ~]$ <b>top -p 1</b>
 top - 21:53:14 up 37 min,  3 users,  load average: 0.00, 0.01, 0.11
 Tasks:   1 total,   0 running,   1 sleeping,   0 stopped,   0 zombie
-%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu(s):  <b>0.0 us,  0.0 sy</b>,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
 KiB Mem :  1883560 total,   432076 free,   654836 used,   796648 buff/cache
 KiB Swap:  2097148 total,  2097148 free,        0 used.   958420 avail Mem
 
@@ -193,10 +193,10 @@ Let's generate some load on the system
  22:09:26 up 53 min,  3 users,  load average: 5.54, 2.43, 0.95
 [hossein@localhost ~]$ <b>uptime</b>
  22:10:57 up 54 min,  3 users,  <b>load average: 6.05, 3.41, 1.44</b>
-[hossein@localhost ~]$ top | head -n15
+[hossein@localhost ~]$ <b>top | head -n15</b>
 top - 22:17:36 up  1:01,  3 users,  <b>load average: 6.05, 5.38, 3.06</b>
 Tasks: 179 total,   8 running, 170 sleeping,   1 stopped,   0 zombie
-%Cpu(s):  <b>0.0 us,100.0 sy</b>,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu(s):  <b>0.0 us,  100.0 sy</b>,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
 KiB Mem :  1883560 total,   429212 free,   657252 used,   797096 buff/cache
 KiB Swap:  2097148 total,  2097148 free,        0 used.   955940 avail Mem
 
@@ -211,9 +211,9 @@ KiB Swap:  2097148 total,  2097148 free,        0 used.   955940 avail Mem
     2 root      20   0       0      0      0 S  0.0  0.0   0:00.00 kthreadd
 </pre>
 
-* `zombie` processes that lost communication from parent process.
-* `us` processes by users.
-* `sy` processes by the system. here we can see 100 of CPU is occupied by the system.
+* `zombie`: process that lost communication from parent process.
+* `us`: process by users.
+* `sy`: process by the system. here we can see 100 of CPU is occupied by the system.
 * By pressing `f`, you can manage the `top` display fields and layout. To quit of this menu press `q`.
 to save the layout, use `W` then the configuration will be saved into `~/.toprc`.
 * Sending signals to processes:
@@ -257,7 +257,7 @@ Processes can be run into real time or normal
 * Priority is by default = 20
 * Nice can vary from -20 to +19 and it affects the priority.
 * The lower the priority the nicer. For example if you give a process a
-nice = -10, the priority decreases to 10 which is better that when you give a process
+nice = -10, the priority decreases to 10 which is better than when you give a process
 a priority = 30.
 * You can see the nice value in `ps -l` or in `top` command the `NI` field.
 * you can run commands with `nice` command and `-n` switch (for nice):
@@ -427,7 +427,7 @@ file1  file2  file3  file4  <b>myarchive.tar.gz</b></pre>
 #### grep
 * `man 7 grep`
 * `-v`: ! (selects non-matching lines)
-* `-e` allows you to llok for multiple expressions.
+* `-e` allows you to look for multiple expressions.
 * `-A 3`: print the line matched and 3 lines after
 * `-B 3`: similar to `-A`, but print 3 lines before
 <pre>
@@ -476,7 +476,7 @@ lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
 [root@localhost ~]# <b>ps aux | awk '{print $1}'</b>
 [root@localhost ~]# <b>grep -l '^root*' /etc/* 2>/dev/null</b> # -l to show the file names not all the matching lines
 [root@localhost ~]# <b>grep -l '^...$' /etc/* 2>/dev/null</b>
-[root@localhost ~]# grep -R 'alex' / # -R to recursive
+[root@localhost ~]# <b>grep -R 'alex' /</b> # -R to recursive
 </pre>
 
 
@@ -507,7 +507,7 @@ Number of days of warning before password expires	: 7
 </pre>
 
 <pre>
-[vagrant@web ~]$ id vagrant
+[vagrant@web ~]$ <b>id vagrant</b>
 uid=1000(vagrant) gid=1000(vagrant) groups=1000(vagrant)
 </pre>
 
@@ -638,7 +638,7 @@ ops:x:1003:ryan
 
 ![users](https://user-images.githubusercontent.com/31813625/35785467-9539f5ae-09ee-11e8-9c43-f9c7da7f172d.png)
 
-You can also use manage what you can do with `chage` and `passwd` command with GUI.
+You can also manage what you can do with `chage` and `passwd` command with this GUI.
 
 These commands are the same:
 <pre>
@@ -662,7 +662,7 @@ Number of days of warning before password expires	: 7
 * `x` on directories means opening the directory (`cd`)
 * How to set ownership lab:
     <pre>
-    [root@rhel blanid]# <b>cd /home/blanid/</b>
+    [root@rhel ~]# <b>cd /home/blanid/</b>
     [root@rhel blanid]# <b>mkdir sales/</b>
     [root@rhel blanid]# <b>ls -l</b>
     total 0
@@ -739,7 +739,7 @@ Last login: Sun Jan  7 19:56:03 EST 2018 on pts/0
 * SUID (`u+s`) 4: on files means to run as owner. On directories has no meaning.
     <pre>
     [blanid@rhel ~]$ <b>ls -l `which passwd`</b>
-    -rw<b>s</b>r-xr-x. 1 root root 27832 Jan 29  2014 /bin/passwd
+    -rw<u><b>s</b></u>r-xr-x. 1 root root 27832 Jan 29  2014 /bin/passwd
     </pre>
 * SGID (`g+s`) 2: on files means to run as group owner. On directories means inherit group owner.
     <pre>
@@ -752,12 +752,12 @@ Last login: Sun Jan  7 19:56:03 EST 2018 on pts/0
     drwxr-xr-x. 2 root sale_group 6 Jan  7 20:11 /sales
     [root@rhel ~]# <b>chmod g+w /sales</b>
     [root@rhel ~]# <b>ls -ld /sales</b>
-    drwxrwxr-x. 2 root sale_group 6 Jan  7 20:11 /sales
+    drwxr<u><b>w</b></u>xr-x. 2 root <b>sale_group</b> 6 Jan  7 20:11 /sales
     [root@rhel ~]# <b>usermod -aG sale_group blanid</b>
     [root@rhel ~]# su - blanid
     [blanid@rhel ~]$ <b>touch /sales/commit1</b>
     [blanid@rhel ~]$ <b>ls -l /sales/commit1</b>
-    -rw-r-----. 1 blanid <b>blanid</b> 0 Jan  7 20:17 /sales/commit1
+    -rw-r-----. 1 blanid <u><b>blanid</b></u> 0 Jan  7 20:17 /sales/commit1
     [blanid@rhel ~]$ <b>exit</b>
     logout
     [root@rhel ~]# <b>chmod g+s /sales</b>
@@ -765,7 +765,7 @@ Last login: Sun Jan  7 19:56:03 EST 2018 on pts/0
     Last login: Sun Jan  7 20:17:46 EST 2018 on pts/0
     [blanid@rhel ~]$ <b>touch /sales/commit2</b>
     [blanid@rhel ~]$ <b>ls -l /sales/commit2</b>
-    -rw-r-----. 1 blanid <b>sale_group</b> 0 Jan  7 20:21 /sales/commit2
+    -rw-r-----. 1 blanid <u><b>sale_group</b></u> 0 Jan  7 20:21 /sales/commit2
     </pre>
 * Sticky (`+t`) 1: Means only delete files and directories if the user is owner of the file or owner of directory.
 (`ls -ld /sales`). (We apply on the parent directory. e.g `chmod +t /sales`).
@@ -966,12 +966,12 @@ UUID=e2ac014a-2064-4cd6-9455-ef7c6b5b9782
 DEVICE=enp0s3
 ONBOOT=no
 </pre>
-You will be having 4 options:
+You will be having 5 options:
 * Edit the file directly and then use `systemctl restart network`
 * Or use of NetworkManager-wait-online.service
- * Use `nmcli`: use tab completion to use the command
- * Use `nmtui`: Text User Interface for controlling NetworkManager
- * GUI
+* Use `nmcli`: use tab completion to use the command
+* Use `nmtui`: Text User Interface for controlling NetworkManager
+* GUI
 
 #### nmcli
 <pre>
@@ -1060,7 +1060,7 @@ default via 192.168.33.1 dev enp0s8 proto static metric 100
     | Maximum Drive Size | 2TB (with MBR) | > 2 TB (MBR or GPT) |
     | Maximum number of partitions | 4 (or 15 primary and logical) | 128 |
     | Disk management utility in Linux | fdisk | gdisk |
-    | CPU Support | CISCO | CISC and RISC
+    | CPU Support | CISC | CISC and RISC
     | Modularity | no | yes |
     | Time Zone and Daylight Saving Support | no | yes |
     | Boot from SAN or Network | extensions on adapters | yes |
@@ -1280,9 +1280,6 @@ sda               8:0    0   40G  0 disk
   ├─centos-root 253:0    0 38.5G  0 lvm  /
   └─centos-swap 253:1    0    1G  0 lvm  [SWAP]
 sdb               8:16   0    4G  0 disk
-[vagrant@web ~]$ fdisk /dev/sdb
-fdisk: cannot open /dev/sdb: Permission denied
-[vagrant@web ~]$ sudo -i
 [root@web ~]# <b>fdisk /dev/sdb</b>
 Welcome to fdisk (util-linux 2.23.2).
 
@@ -1470,11 +1467,11 @@ If a tree falls in a forest and no one is around to hear it, does it make a soun
 ### journalctl
 * Part of systemd
   * Responsible of viewing and log management
-* Mamber of adm or wheel to read
+* Member of adm or wheel to read
   * `usermod -aG wheel username`
 * `journalctl -n 50 -p err`: Displays last 50 entries with error priority
 * By default only in memory: `/run/log/journal`
-* To make it persistant:
+* To make it persistent:
   * `mkdir /var/log/journal`
   * `systemctl restart systemd-journald`
 
@@ -1520,7 +1517,7 @@ Jan 11 22:40:07 rhel sudo[1436]: pam_unix(sudo-i:auth): authentication failure; 
 [root@web pub]# <b>systemctl start vsftpd</b>
 [root@web pub]# <b>systemctl enable vsftpd</b>
 ln -s '/usr/lib/systemd/system/vsftpd.service' '/etc/systemd/system/multi-user.target.wants/vsftpd.service'
-[root@web ~]# cd /var/ftp/pub/
+[root@web ~]# <b>cd /var/ftp/pub/</b>
 [root@web pub]# <b>vi file1</b>
 </pre>
 On the client
@@ -1672,7 +1669,7 @@ or other application using the libvirt API.
     parm:           check_media_type:bool
     parm:           mrw_format_restart:bool
     </pre>
-* `modprobe` can changes the kernel module behaviour
+* `modprobe` can change the kernel module behaviour
 * To add custom arguments to the modules loaded by udev early in the boot process,
   you need to create a custom configuration file for modprobe, which udev uses to load the modules.
   <pre>
