@@ -6,3 +6,5 @@ Add route:
 sudo route add -net 10.0.0.0 netmask 255.0.0.0 gw 192.168.122.10
 sudo route add -net 172.16.0.0 netmask 255.240.0.0 gw 192.168.122.10
 sudo route add -net 192.168.0.0 netmask 255.255.0.0 gw 192.168.122.10
+
+nmcli dev show | grep DNS
