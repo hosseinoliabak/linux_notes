@@ -339,6 +339,12 @@ systemd-readahead-replay.service            enabled
 tuned.service                               enabled
 </pre>
 
+To list all services
+<pre>[root@client1 ~]# <b>systemctl -at service</b></pre>
+
+To list the running services
+<pre>[root@client1 ~]# <b>systemctl -t service --state=active</b></pre>
+
 ### xinetd
 Trivial services may be managed by the super daemon xinetd or inetd. The global
 configuration `/etc/xinetd.conf` and services in `/etc/xinetd.d`
