@@ -658,4 +658,71 @@ So far, both methods above were not persistent. Let's do it persistently
 [root@client1 ~]# <b>sysctl -p</b>
 vm.swappiness = 60
 </pre>
+**Lab**
+* Disable IPv6
+* Disable `icmp_echo_ignore_all`
+* Disable `icmp_echo_ignore_broadcast`
+* Disable routing: `ip_forward`
+* How to disable CPU 7?
+  * `echo 0 > /sys/devices/system/cpu/cpu7/online`
+  
+### tuned
+* Like sdm template in Cisco switches for RHEL servers
+<pre>
+[root@client1 ~]# <b>systemctl status tuned</b>
+● tuned.service - Dynamic System Tuning Daemon
+   Loaded: loaded (/usr/lib/systemd/system/tuned.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2018-02-22 05:35:26 EST; 2h 11min ago
+ Main PID: 1066 (tuned)
+   CGroup: /system.slice/tuned.service
+           └─1066 /usr/bin/python -Es /usr/sbin/tuned -l -P
+[root@client1 ~]# <b>tuned-adm list</b>
+Available profiles:
+- balanced                    - General non-specialized tuned profile
+- desktop                     - Optimize for the desktop use-case
+- latency-performance         - Optimize for deterministic performance at the cost of increased power consumption
+- network-latency             - Optimize for deterministic performance at the cost of increased power consumption, focused on low latency network performance
+- network-throughput          - Optimize for streaming network throughput, generally only necessary on older CPUs or 40G+ networks
+- powersave                   - Optimize for low power consumption
+- throughput-performance      - Broadly applicable tuning that provides excellent performance across a variety of common server workloads
+- virtual-guest               - Optimize for running inside a virtual guest
+- virtual-host                - Optimize for running KVM guests
+Current active profile: <b>virtual-guest</b>
+[root@client1 ~]# <b>cat /usr/lib/tuned/virtual-guest/tuned.conf</b> 
+#
+# tuned configuration
+#
 
+[main]
+summary=Optimize for running inside a virtual guest
+include=throughput-performance
+
+[sysctl]
+# If a workload mostly uses anonymous memory and it hits this limit, the entire
+# working set is buffered for I/O, and any more write buffering would require
+# swapping, so it's time to throttle writes until I/O can catch up.  Workloads
+# that mostly use file mappings may be able to use even higher values.
+#
+# The generator of dirty data starts writeback at this percentage (system default
+# is 20%)
+vm.dirty_ratio = 30
+
+# Filesystem I/O is usually much more efficient than swapping, so try to keep
+# swapping low.  It's usually safe to go even lower than this on systems with
+# server-grade storage.
+vm.swappiness = 30
+</pre>
+
+## Networking
+* `man nmcli-examples`: see the example 9
+* Static route
+    <pre>
+    [root@client1 ~]# <b>vi /etc/sysconfig/network-scripts/route-eth0</b>
+    10.0.0.0/24 via 192.168.4.254 dev eth0
+    [root@client1 ~]# <b>systemctl restart network</b>
+    [root@client1 ~]# <b>ip r s</b>
+    default via 192.168.4.2 dev eth0 proto static metric 100 
+    <b>10.0.0.0/24 via 192.168.4.254 dev eth0 proto static metric 100</b> 
+    192.168.4.0/24 dev eth0 proto kernel scope link src 192.168.4.5 metric 100 
+    192.168.122.0/24 dev virbr0 proto kernel scope link src 192.168.122.1
+    </pre>
