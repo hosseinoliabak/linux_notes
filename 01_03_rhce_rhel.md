@@ -716,6 +716,17 @@ vm.swappiness = 30
 ## Networking
 * `man nmcli-examples`: see the example 9
 * Static route
+  * First, check if routing is enabled or not. If not, we enable it.
+    <pre>
+    [root@client1 ~]# <b>cat /proc/sys/net/ipv4/ip_forward</b>
+    0
+    [root@client1 ~]# <b>vi /etc/sysctl.conf</b>
+    [root@client1 ~]# <b>sysctl -p</b>
+    net.ipv4.ip_forward = 1
+    [root@client1 ~]# <b>cat /proc/sys/net/ipv4/ip_forward</b>
+    1
+    </pre>
+  * Then  
     <pre>
     [root@client1 ~]# <b>vi /etc/sysconfig/network-scripts/route-eth0</b>
     10.0.0.0/24 via 192.168.4.254 dev eth0
