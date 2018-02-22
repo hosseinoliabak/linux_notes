@@ -477,6 +477,185 @@ Writing superblocks and filesystem accounting information: done
   * CPU: Many tunables, but in general not very important
 * Tools:
   * top: Excellent generic overview
-  * iotop: information about I/O
+  * iostat
+    * iotop: information about I/O; better than iostat
   * vmstat: Virtual Memory Statistics (This is not swap)
   * sar: System Activity Reporter
+
+### vmstat
+<pre>
+[root@client1 ~]# <b>vmstat 2 5</b>
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 3  0 112988  67752      0 273288   12  174  4655   614  315  560 10  3 86  1  0
+ 0  0 112988  67488      0 273288    0    0     0    32   70   89  0  1 99  0  0
+ 0  0 112988  67488      0 273288    0    0     0     0   49   52  0  0 100  0  0
+ 0  0 112988  67488      0 273288    0    0     0     0   52   54  0  0 100  0  0
+ 0  0 112988  67488      0 273288    0    0     0     0   64   70  0  0 100  0  0
+</pre>
+* `2` means every 2 seconds
+* `5` means 5 times
+* `s` means swap
+* `b` means block
+* `i` means in
+* `o` means out
+
+<pre>
+[root@client1 ~]# <b>vmstat -sS M</b>
+          992 M total memory
+          659 M used memory
+          363 M active memory
+          416 M inactive memory
+           64 M free memory
+            0 M buffer memory
+          267 M swap cache
+          715 M total swap
+          110 M used swap
+          605 M free swap
+         6573 non-nice user cpu ticks
+          187 nice user cpu ticks
+         1790 system cpu ticks
+        85687 idle cpu ticks
+          491 IO-wait cpu ticks
+            0 IRQ cpu ticks
+           32 softirq cpu ticks
+           28 stolen cpu ticks
+      3062032 pages paged in
+       403812 pages paged out
+         1996 pages swapped in
+        28563 pages swapped out
+       212828 interrupts
+       374548 CPU context switches
+   1518664893 boot time
+         3451 forks
+</pre>
+
+<pre>
+[root@client1 ~]# <b>less /proc/meminfo | grep ctive</b>
+Active:           376132 kB
+Inactive:         427704 kB
+Active(anon):     272880 kB
+Inactive(anon):   326856 kB
+Active(file):     103252 kB
+Inactive(file):   100848 kB
+</pre>
+
+### System Active Reporter (sar)
+* `sar` comes from sysstat package and collects data every 10 minutes
+* To make sorting and finding data in `sar` easy, set `LANG=C` before starting `sar`
+  * `echo alias sar='LANG=C sar' >> /etc/bashrc`
+* `sar` data is collected through cron jobs `/etc/cron.d/sysstat`
+
+    <pre>
+    [root@client1 ~]# <b>cat /etc/cron.d/sysstat</b>
+    # Run system activity accounting tool every 10 minutes
+    */10 * * * * root /usr/lib64/sa/sa1 1 1
+    # Generate a daily summary of process accounting at 23:53
+    53 23 * * * root /usr/lib64/sa/sa2 -A
+    </pre>
+
+* Data is written to `/var/log/sa` directory
+* Default reports are kept 28 days
+    <pre>
+    [root@client1 ~]# <b>cat /etc/sysconfig/sysstat</b>
+    # sysstat-10.1.5 configuration file.
+    
+    # How long to keep log files (in days).
+    # If value is greater than 28, then log files are kept in
+    # multiple directories, one for each month.
+    HISTORY=28
+    
+    # Compress (using gzip or bzip2) sa and sar files older than (in days):
+    COMPRESSAFTER=31
+    
+    # Parameters for the system activity data collector (see sadc manual page)
+    # which are used for the generation of log files.
+    SADC_OPTIONS="-S DISK"
+    
+    # Compression program to use.
+    ZIP="bzip2"
+    </pre>
+
+<pre>
+[root@serveripa ~]# <b>LANG=C sar | less</b>
+Linux 3.10.0-693.el7.x86_64 (serveripa.example.com)     02/21/18        _x86_64_        (2 CPU)
+
+06:18:22          LINUX RESTART
+
+06:20:01        CPU     %user     %nice   %system   %iowait    %steal     %idle
+06:30:01        all      0.07      0.00      0.03      0.02      0.04     99.84
+06:40:01        all      0.04      0.00      0.03      0.01      0.04     99.88
+06:50:01        all      0.03      0.00      0.03      0.01      0.04     99.89
+07:00:01        all      0.03      0.00      0.02      0.01      0.04     99.90
+07:10:01        all      0.04      0.00      0.03      0.01      0.04     99.88
+07:20:01        all      0.03      0.00      0.02      0.01      0.03     99.90
+...
+[root@serveripa ~]# <b>LANG=C sar -P 0 | less</b>
+Linux 3.10.0-693.el7.x86_64 (serveripa.example.com)     02/21/18        _x86_64_        (2 CPU)
+
+06:18:22          LINUX RESTART
+
+06:20:01        CPU     %user     %nice   %system   %iowait    %steal     %idle
+06:30:01          0      0.04      0.00      0.03      0.03      0.03     99.86
+06:40:01          0      0.03      0.00      0.03      0.02      0.05     99.88
+06:50:01          0      0.02      0.00      0.02      0.02      0.04     99.91
+07:00:01          0      0.02      0.00      0.03      0.01      0.04     99.89
+07:10:01          0      0.04      0.00      0.03      0.02      0.04     99.87
+07:20:01          0      0.04      0.00      0.03      0.02      0.03     99.90
+...
+[root@serveripa ~]# <b>LANG=C sar -n DEV</b> # Giving us network informaion
+Linux 3.10.0-693.el7.x86_64 (serveripa.example.com)     02/21/18        _x86_64_        (2 CPU)
+
+06:18:22          LINUX RESTART
+
+06:20:01        IFACE   rxpck/s   txpck/s    rxkB/s    txkB/s   rxcmp/s   txcmp/s  rxmcst/s
+06:30:01         eth0      0.61      0.21      0.03      0.02      0.00      0.00      0.00
+06:30:01           lo      0.26      0.26      0.03      0.03      0.00      0.00      0.00
+06:30:01    virbr0-nic      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+...
+</pre>
+
+## System Optimization Basics
+* Through `/proc/sys`
+* Or using `sysctl`
+  * `/etc/sysctl.conf`
+  * `/usr/lib/sysctl.d`
+<pre>
+[root@client1 ~]# <b>cat /proc/sys/vm/swappiness</b> 
+30
+[root@client1 ~]# <b>echo 80 > /proc/sys/vm/swappiness</b>
+</pre>
+For another example, you tune `/proc/sys/vm/nr_hugepages`
+
+<pre>
+[root@client1 ~]# <b>sysctl -a | wc -l</b>
+988
+[root@client1 ~]# <b>sysctl -a | tail -n18</b>
+<b>vm.nr_hugepages = 0</b>
+vm.nr_hugepages_mempolicy = 0
+vm.nr_overcommit_hugepages = 0
+vm.nr_pdflush_threads = 0
+vm.numa_zonelist_order = default
+vm.oom_dump_tasks = 1
+vm.oom_kill_allocating_task = 0
+vm.overcommit_kbytes = 0
+vm.overcommit_memory = 0
+vm.overcommit_ratio = 50
+vm.page-cluster = 3
+vm.panic_on_oom = 0
+vm.percpu_pagelist_fraction = 0
+vm.stat_interval = 1
+<b>vm.swappiness = 80</b>
+vm.user_reserve_kbytes = 29135
+vm.vfs_cache_pressure = 100
+vm.zone_reclaim_mode = 0
+[root@client1 ~]# <b>sysctl -w vm.nr_hugepages=60</b>
+vm.nr_hugepages = 60
+</pre>
+So far, both methods above were not persistent. Let's do it persistently
+<pre>
+[root@client1 ~]# <b>vim /etc/sysctl.conf</b> 
+[root@client1 ~]# <b>sysctl -p</b>
+vm.swappiness = 60
+</pre>
+
