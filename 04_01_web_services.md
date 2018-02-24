@@ -17,6 +17,7 @@ What we will be covering:
 * Serve multiple sites with virtual hosts
 * Control logging and status reporting
 
+### Installation
 <pre>
 [root@web ~]# <b>yum install httpd</b>
 [root@web ~]# <b>systemctl enable httpd</b>
@@ -35,6 +36,35 @@ ETag: "22b1-55bec5c082380"
 Accept-Ranges: bytes
 Content-Length: 8881
 Content-Type: text/html; charset=UTF-8
+</pre>
+
+#### Alternatively using `yum groups install`
+<pre
+[root@client1 ~]# <b>yum groups list</b>
+Available Environment Groups:
+   Minimal Install
+   Compute Node
+   Infrastructure Server
+   File and Print Server
+   <b>Basic Web Server</b>
+   Virtualization Host
+   Server with GUI
+   GNOME Desktop
+   KDE Plasma Workspaces
+   Development and Creative Workstation
+Available Groups:
+   Compatibility Libraries
+   Console Internet Tools
+   Development Tools
+   Graphical Administration Tools
+   Legacy UNIX Compatibility
+   Scientific Support
+   Security Tools
+   Smart Card Support
+   System Administration Tools
+   System Management
+Done
+[root@client1 ~]# <b>yum groups install "Basic Web Server"</b>
 </pre>
 
 ### Apache's Modular Architecture
