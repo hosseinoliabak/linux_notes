@@ -13,7 +13,7 @@ hossein@hossein $ cat /sys<b>/module/scsi_mod/parameters/</b>max_luns
 512
 </pre>
 
-Essentially /proc and /sys are the same.
+Essentially `/proc` and `/sys` are the same.
 `sysfs` was added in kernel 2.5 or 2.6 due to clutter in `procfs`.
 
 The procfs was only meant to hold process information. eventually everything
@@ -203,7 +203,7 @@ GRUB 2: CentOS 7, SLES 23, Debian 8, Ubuntu 9.10: MBR, GPT
     GRUB_CMDLINE_LINUX="rd.lvm.lv=centos/root rd.lvm.lv=centos/swap crashkernel=auto rhgb quiet"
     GRUB_DISABLE_RECOVERY="true"
     </pre>
-  * `grub2-mkconfig -o /boot/grub2/grub.cfg` to create grub.cfg for debian `grub2-mkconfig`
+  * `grub2-mkconfig -o /boot/grub2/grub.cfg` to create grub.cfg for Debian `grub2-mkconfig`
     <pre>
     [vagrant@web ~]$ <b>sudo grub2-mkconfig -o /boot/grub2/grub.cfg</b>
     Generating grub configuration file ...
@@ -234,7 +234,7 @@ Then press `Ctrl+x`
 
 There are some methods, but here we review *Booting into single user mode*
 1. Restart the machine and press "Shift" key continuously 
-2. Boot intp GRUB Stage 
+2. Boot into GRUB Stage 
 3. Modify Kernel Argument (by pressing ‘a’ to modify the kernel arguments) 
 4. Append 1 at the end of **rhgb quiet** and press `Enter` key to boot into single user mode 
 5. Type `passwd` Command 
@@ -590,7 +590,7 @@ It is very useful to know these because it lets you easily find what you are loo
   * /opt: Typically contains extra and third party software.
   * /usr filesystem is the second major section of the filesystem, containing shareable, read-only data. It can be shared between systems, although present practice does not often do this
 * Logical Volume Manager: Operating system level partitioning system.
-  * Physical volumes: or the disks themeselves (JBOD)
+  * Physical volumes: or the disks themselves (JBOD)
   * Volume groups: combine the physical volumes together
   * Logical volumes: we format and mount into the desired mount point
 
@@ -1165,7 +1165,7 @@ If we need to add to the PATH variable, we generally will append to it.
 In the current shell:
 * `export PATH=$PATH:$HOME/bin`
 
-* Every time the user logsin
+* Every time the user logs in
 <pre>
 vi ~/.bashrc
 export PATH=$PATH:/tmp/mypath # for example
@@ -1216,9 +1216,9 @@ but can be changes via HISTSIZE)
   * To number the lines use the command `nl`: `nl /etc/services`.
   To only see the number of lines in a file: `wc -l /etc/services`
   * `tail -f /var/log/messages` or `tail -f /var/log/syslog` To stop following: `ctrl + c`.
-  * less used for paging large files. `/` start searching forwards. `?` start serching backwards. press `n` for the next match.
+  * less used for paging large files. `/` start searching forwards. `?` start searching backwards. press `n` for the next match.
   * `uniq` removes duplicate entries from its input; before using `uniq`,
-  we have to `sort` the input to uniq: `sort whatIHave.txt | uniq`
+  we have to `sort` the input to `uniq`: `sort whatIHave.txt | uniq`
 <pre>
 hossein@hossein ~ $ <b>cat /etc/hosts</b>
 127.0.0.1	localhost
@@ -1292,7 +1292,7 @@ hosts
 
 
 ### find
-The `find` command helps us to find files based on many criterias. Look at these: 
+The `find` command helps us to find files based on many criteria. Look at these: 
 * `find .`
 * `find . -iname "*my*"` #not case sensitive
 * `find . -empty` #finds empty files 
@@ -1349,7 +1349,7 @@ file with `{}` and finish your command with `\;` 
 Other options:
 * The `-user` and `-group` specifies a specific user & group.
 * Or even find the files not belonging to any user or group with `-nouser` and `-nogroup`
-* Or even find the files not belonging to any user / group with -nouser and -nogroup 
+* Or even find the files not belonging to any user / group with `-nouser` and `-nogroup` 
 * Add a `!` just before any phrase to negate it. So, this will find files not belonging to *hossein*: 
 `find . ! -user hossein` 
 
@@ -1622,7 +1622,7 @@ hossein@hossein ~ $ <b>tr ' ' ',' < /etc/hosts</b> #to substitute each space by 
 #,The,following,lines,are,desirable,for,IPv6,capable,hosts
 ::1,,,,,ip6-localhost,ip6-loopback
 </pre>
-Anothe example:
+Another example:
 <pre>
 [vagrant@web ~]$ <b>while read i; do ping -c2 $i; done < hosts</b>
 PING 192.168.33.10 (192.168.33.10) 56(84) bytes of data.
@@ -1818,7 +1818,7 @@ cpio: Removing leading `/' from member names
 
 * **Lab**
 
-Currenly the home directory is 39 GiB. I want to change it to 3.0 GiB.
+Currently the home directory is 39 GiB. I want to change it to 3.0 GiB.
 
 <pre>
 [vagrant@web /]$ df -hT /home
@@ -2427,6 +2427,19 @@ SI:localuser:gdm
 SI:localuser:root
 </pre>
 
+How to disable touchpad?
+<pre>
+root@localhost:~# <b>man xorg.conf</b>
+root@localhost:~# <b>vi /usr/share/X11/xorg.conf.d/70-synaptics.conf</b>
+Section "InputClass"
+        Identifier "touchpad catchall"
+        Driver "synaptics"
+        MatchIsTouchpad "on"
+      MatchDevicePath "/dev/input/event*"
+        <b>Option "Ignore" "on"</b>
+EndSection
+...
+</pre>
 ### Adding screen resolution
 
 Currently I don't have 1280x720 resolution
@@ -2676,11 +2689,11 @@ If a tree falls in a forest and no one is around to hear it, does it make a soun
 ### journalctl
 * Part of systemd
   * Responsible of viewing and log management
-* Mamber of adm or wheel to read
+* Member of adm or wheel to read
   * `usermod -aG wheel username`
 * `journalctl -n 50 -p err`: Displays last 50 entries with error priority
 * By default only in memory: `/run/log/journal`
-* To make it persistant:
+* To make it persistent:
   * `mkdir /var/log/journal`
   * `systemctl restart systemd-journald`
 
