@@ -1174,3 +1174,158 @@ deprecated and replaced by the `ss` command from the iproute suite of tools.
 * `n`: Does'n resolve hostname and port number
 * `p`: process name and PID
 * `s`: summary statistics
+
+## DNS server
+* Name Resolution: Name to IP address
+* Name resolution methods in Linux:
+  * `/etc/hosts` text file 
+  * DNS
+
+Here we talk about DNS server
+* Small to large size solution 
+* Hierarchical
+  * Root Domain: `.` 
+  * Top Level Domain (TLD):  
+    * Generic Top-Level Domain: gTLD: com, org, edu, net, … 
+    * Country Code Top Level Domain: ccTLD: ca, uk, ir, … 
+    * Combined: gTLD.ccTLD: gov.ir, ac.ir 
+  * Secondary Level Domain (SLD): microsoft, google, … 
+* FQDN: Host.subdomain.SLD.TLD. www.access.redhat.com.
+* Zones to store 
+  * LDAP Domain: Domain Controller needed 
+  * DNS Domain: No need to DC 
+* Zone: 
+  * Primary Zone: 
+    * At least one primary zone for DNS service 
+    * This zone information is stored 
+      * either in a file 
+      * or in AD: in this case, AD and DNS have to be installed at the same server. 
+      * The zone which stores its information at AD is called Active Directory Integrated Zone or AD Integrated 
+  * Secondary Zone: 
+    * Redundancy, Fault Tolerance, and load balancing 
+    * Read only version of DNS Records 
+    * Receives updates from Master Server (Could be Primary or Secondary Zone), this transfer is called Zone Transfer 
+    * The names must be identical in both Secondary Zone and Master Zone 
+    * If Master Zone’s IP address changes, Admin have to change it in the secondary zone 
+    * So, in the destination server we need to configure secondary zone and in the master server we have to allow Zone Transfer to the destination sever. 
+  * Stub Zone: 
+    * A kind of secondary zone in which NS, and SOA records are being transferred 
+    * Minimizes Bandwidth 
+    * If the IP address of the Master Server changes, it will be populated to Stub Zone automatically. 
+    * So for Stub zone the only thing we need is to configure the stub zone on the destination server then it automatically recognizes the master server. 
+* DNS records: We talked about zone files and records, and now we will see different types of records: 
+  * A record: the most applicable record in a zone. To map a Name to an IP address 
+  * AAAA record: like A record but for IPv6
+  * CNAME: Canonical Name: name to name (as opposed to name to IP address)
+  * PTR: for reverse lookup (will talk about later)
+  * MX record: points the IP address of your mail server 
+    * There is one A record for an MX record
+    * `dig MX example.com`
+  * SRV: Service Record, such as Kerberos, point to IP address of the Domain Controller on the domain 
+  * SOA record (Start of Authority): your master DNS Server; contains configuration for Zone transfer 
+  * NS: Authoritative DNS Server (official authoritative server): DNS servers name for a Zone Hosting 
+* DNS Query: 
+  * Client requests from a DNS Server by default as a Recursive Query 
+  * DNS Server requests from another DNS server by default as an Iterative Query 
+  * Recursive Query: Client asks a Name Resolution from the server and server mustn’t refer the client to another server. If DNS server doesn’t know the answer, the DNS server ask an upstream DNS server for the answer 
+  * Iterative Query: Client asks server and server can direct the client to another server 
+* DNS stages: 
+  * Clients checks its cache (recursive); if resolved, then end 
+  * Clients ask DNS Server (recursive); if resolved, then end 
+  * DNS Server checks the conditional forwarding for the request then forwards to the other DNS server in conditional forwarding (iterative); if resolved, then end 
+  * DNS Server checks forwarder (iterative); if resolved, then end 
+  * DNS Server goes to root hints (iterative)
+* Cache: 
+  * Client Cache: 
+  * DNS Server Cache:
+  * Time to Live (TTL): cache store time
+* Forwarders – Cache Only DNS: 
+  * To send clients request to an upstream server 
+  * Unconditional: All requests which there is no answer for from the DNS server is sent to the listed servers in Unconditional Forwarders 
+  * Conditional: We can forward requests with Domain name condition:
+* Reverse Lookup Zones: 
+  * IP to Name 
+  * PTR record is used to convert IP address to a Name 
+  * Verify: `dig -x 142.133.217.14`
+  
+### Cache Only DNS
+* All DNS Servers have Cache memory 
+* Cache Only DNS doesn't have any zones 
+* They only cache clients' requests
+
+<pre>
+[root@target ~]# <b>yum install -y unbound</b>
+[root@target ~]# systemctl enable unbound
+Created symlink from /etc/systemd/system/multi-user.target.wants/unbound.service to /usr/lib/systemd/system/unbound.service.
+[root@target ~]# <b>systemctl start unbound</b>
+[root@target ~]# <b>unbound-checkconf</b> 
+unbound-checkconf: no errors in /etc/unbound/unbound.conf
+[root@target ~]# sed '/^\s*#/d;/^$/d' /etc/unbound/unbound.conf
+server:
+	verbosity: 1
+	statistics-interval: 0
+	statistics-cumulative: no
+	extended-statistics: yes
+	num-threads: 2
+	<b>interface: 0.0.0.0
+	interface: ::0</b>
+	interface-automatic: no
+        <b>access-control: 192.168.4.0/24 allow</b>
+	chroot: ""
+	username: "unbound"
+	directory: "/etc/unbound"
+	log-time-ascii: yes
+	pidfile: "/var/run/unbound/unbound.pid"
+	harden-glue: yes
+	harden-dnssec-stripped: yes
+	harden-below-nxdomain: yes
+	harden-referral-path: yes
+	use-caps-for-id: no
+	unwanted-reply-threshold: 10000000
+	prefetch: yes
+	prefetch-key: yes
+	rrset-roundrobin: yes
+	minimal-responses: yes
+	trusted-keys-file: /etc/unbound/keys.d/*.key
+	auto-trust-anchor-file: "/var/lib/unbound/root.key"
+	<b>domain-insecure: "example.com"</b>
+	val-clean-additional: yes
+	val-permissive-mode: no
+	val-log-level: 1
+	include: /etc/unbound/local.d/*.conf
+remote-control:
+	control-enable: yes
+	server-key-file: "/etc/unbound/unbound_server.key"
+	server-cert-file: "/etc/unbound/unbound_server.pem"
+	control-key-file: "/etc/unbound/unbound_control.key"
+	control-cert-file: "/etc/unbound/unbound_control.pem"
+include: /etc/unbound/conf.d/*.conf
+<b>forward-zone:
+	name: "."
+	forward-addr: 8.8.8.8</b>
+[root@target ~]# <b>systemctl restart unbound</b>
+[root@target ~]# <b>firewall-cmd --permanent --add-service=dns</b>
+success
+[root@target ~]# <b>firewall-cmd --reload</b>
+success
+[root@target ~]# <b>ping www.redhat.com</b>
+PING e3396.dscx.akamaiedge.net (104.93.170.56) 56(84) bytes of data.
+64 bytes from a104-93-170-56.deploy.static.akamaitechnologies.com (104.93.170.56): icmp_seq=1 ttl=58 time=20.6 ms
+64 bytes from a104-93-170-56.deploy.static.akamaitechnologies.com (104.93.170.56): icmp_seq=2 ttl=58 time=69.3 ms
+64 bytes from a104-93-170-56.deploy.static.akamaitechnologies.com (104.93.170.56): icmp_seq=3 ttl=58 time=89.5 ms
+^C
+--- e3396.dscx.akamaiedge.net ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 20.670/59.868/89.547/28.913 ms
+[root@target ~]# <b>unbound-control dump_cache</b>
+START_RRSET_CACHE
+;rrset 6827 3 2 5 0
+...
+END_MSG_CACHE
+EOF
+[root@target ~]# <b>unbound-control dump_cache > dns_cache</b>
+[root@target ~]# <b>unbound-control flush www.google.com</b>
+ok
+[root@target ~]# <b>unbound-control load_cache < dns_cache</b>
+ok
+</pre> 
