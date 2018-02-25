@@ -1328,4 +1328,126 @@ EOF
 ok
 [root@target ~]# <b>unbound-control load_cache < dns_cache</b>
 ok
-</pre> 
+</pre>
+
+## NFS (Network File System) Server
+NFS server: The NFS server is the traditional way of sharing or exporting file systems in UNIX and Linux.
+Often, home directories in Linux are centralized on a single server with other systems mounting the remote file systems.
+<pre>
+[root@target ~]# <b>yum install nfs-utils</b>
+[root@target ~]# <b>systemctl enable nfs-server</b>
+Created symlink from /etc/systemd/system/multi-user.target.wants/nfs-server.service to /usr/lib/systemd/system/nfs-server.service.
+[root@target ~]# <b>systemctl start nfs-server</b>
+[root@target ~]# <b>ss -ntl</b>
+State      Recv-Q Send-Q                           Local Address:Port                                          Peer Address:Port                          
+LISTEN     0      128                                          *:20048                                                    *:*                                   
+LISTEN     0      64                                           *:2049                                                     *:*                  
+LISTEN     0      128                                          *:57890                                                    *:*                  
+LISTEN     0      64                                           *:36298                                                    *:*                  
+LISTEN     0      128                                         :::20048                                                   :::*                  
+LISTEN     0      128                                         :::45684                                                   :::*                  
+LISTEN     0      64                                          :::40513                                                   :::*                  
+LISTEN     0      64                                          :::2049                                                    :::*    
+</pre>
+By default, the NFS server starts just 8 processes. In a small setup this may work but not in anything larger.
+As this is kernel-based a reboot is required. You can change it through `/etc/sysconfig/nfs`
+<pre>
+[root@target ~]# <b>pgrep nfsd</b>
+1139
+1149
+1151
+1153
+1156
+1159
+1161
+1164
+1166
+[root@target ~]# <b>cat /etc/sysconfig/nfs</b>
+...
+# Number of nfs server processes to be started.
+# The default is 8. 
+<b>RPCNFSDCOUNT=16</b>
+...
+[root@target ~]# <b>reboot</b>
+[root@target ~]# <b>pgrep nfsd</b>
+1117
+1126
+1128
+1129
+1130
+1132
+1134
+1135
+1136
+1137
+1140
+1141
+1142
+1144
+1145
+1146
+1148
+</pre>
+
+### Creating Exports in NFS
+* The `/etc/exports` file controls which file systems are exported to remote hosts and specifies options.
+<pre>
+[root@target ~]# <b>showmount -e</b>
+Export list for target.example.com:
+[root@target ~]# <b>exportfs -v</b> # Nothing is returned so far
+[root@target ~]# <b>mkdir -p /exports/{home,etc}</b>
+[root@target ~]# <b>tail -n2 /etc/fstab</b> 
+/home /exports/home none bind 0 0
+/etc /exports/etc none bind 0 0
+[root@target ~]# <b>mount -a</b>
+[root@target ~]# <b>vi /etc/exports</b>
+/exports *(rw,no_root_squash,crossmnt,fsid=0)
+[root@target ~]# <b>exportfs -r</b>
+[root@target ~]# <b>exportfs -v</b>
+/exports      	<world>(rw,sync,wdelay,hide,crossmnt,no_subtree_check,fsid=0,sec=sys,secure,no_root_squash,no_all_squash)
+[root@target ~]# <b>mount 127.0.0.1:/ /mnt</b>
+[root@target ~]# <b>ls /mnt/</b>
+etc  home
+</pre>
+* Host notation: We can share host names or to IP addresses. This can be specifically or via forms of wildcards.
+The most specific match will be used where a host matches more than one export for a specific directory.
+  * All hosts = `*`
+  * All hosts in example.com = `*.example.com`
+  * Subnet = `192.168.4.*`
+  * Subnet mask = `192.168.4.0/255.255.255.0`
+  * Subnet CIDR = `192.168.4.0/24`
+  * Specific IP address = `192.168.4.16`
+* Squashing users: NFS options that include the word squash relates to mapping users to an anonymous
+account that can only access files that are world readable.
+  * The option `root_squash` prevents root users connected remotely from having root privileges
+  and assigns them the user ID for the user `nfsnobody`. This effectively *squashes* the power of
+  the remote root user to the lowest local user, preventing unauthorized alteration of files on
+  the remote server.  It is NOT a good idea to reverse this.
+  * `all_squash`: squashes every remote user, including root.
+* Now let's mount on a remote client:
+    <pre>
+    [root@client1 ~]# <b>showmount -e 192.168.4.4</b>
+    Export list for 192.168.4.4:
+    /exports *
+    [root@client1 ~]# <b>tail -n1 /etc/fstab</b> 
+    192.168.4.4:/exports	/home/nfs		nfs	_netdev	0 0
+    [root@client1 ~]# <b>mount -a</b>
+    [root@client1 ~]# <b>ls /home/nfs/</b>
+    etc  home
+    </pre>
+* NFSv4 offers some new features
+  * Fake root mount
+    <pre>
+    [root@client1 ~]# <b>mount 192.168.4.4:/ /mnt</b>
+    [root@client1 ~]# <b>ls /mnt</b>
+    etc  home
+    </pre>
+  * Kerberos protection
+    * By default, NFS has no security but the IP address or host name of the client
+    * Security options:
+      * `none`: anonymous access to files
+      * `sys`: default value, files access is based on UID and GID and ID mapping
+      * `krb5`: clients must prove ID using kerberos
+      * `krb5i`: like `krb5`, but adds integrity
+      * `krb5p`: adds encryption to the above
+  * Listens on TCP 2049    
