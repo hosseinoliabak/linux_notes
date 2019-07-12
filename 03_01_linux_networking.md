@@ -817,3 +817,22 @@ deprecated and replaced by the `ss` command from the iproute suite of tools.
 * `n`: Does'n resolve hostname and port number
 * `p`: process name and PID
 * `s`: summary statistics
+
+### Start iperf3 as a service
+<pre>
+root@iperf:<b>/etc/systemd/system# cat iperf3.service</b>
+[Unit]
+Description=iperf
+After=network.target
+[Service]
+Type=simple
+ExecStart=/usr/bin/iperf3 -s
+StandardOutput=null
+Restart=always
+[Install]
+WantedBy=multi-user.target
+Alias=iperf3.service
+root@dvdns-9:/etc/systemd/system#
+root@dvdns-9:/etc/systemd/system#<b>systemctl daemon-reload</b>
+
+</pre>
