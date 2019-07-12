@@ -626,6 +626,10 @@ logger -p local5.err \
 
 Entry in `/etc/rsyslog.conf`
   * `local5.* /var/log/local5.log`
+  
+<pre>
+*/5 * * * * root  /home/hosseinoliabak/pingGCPWest.sh | logger -n 172.30.51.11 -P 514
+</pre>
 
 ### Troubleshooting scripts
 * Using `echo` is simple and powerful:
